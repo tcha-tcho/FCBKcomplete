@@ -1,5 +1,5 @@
 /*
- FCBKcomplete 2.6
+ FCBKcomplete 2.6.1
  - Jquery version required: 1.2.x, 1.3.x
  
  Changelog:
@@ -30,7 +30,9 @@
  		autoexpand input element added
  		removeItem bug fixed
  		and many more bug fixed
- 		
+
+ - 2.6.1
+ 		fixed public method to use it $("elem").trigger("addItem",[{"title": "test", "value": "test"}]);
  */
 
 /* Coded by: emposha <admin@emposha.com> */
@@ -83,8 +85,7 @@ jQuery(
 				   if (browser_msie)
 	               {
 	                    complete.append('<iframe class="ie6fix" scrolling="no" frameborder="0"></iframe>');
-	                    browser_msie_frame = complete.children('.ie6fix');
-						//$("input:checkbox").parent().css("z-index","-1");
+	                    browser_msie_frame = complete.children('.ie6fix');						
 	               }
 				   
 	               feed = $(document.createElement("ul"));
@@ -121,13 +122,13 @@ jQuery(
 		        }
 				
 				//public method to add new item
-				this.addItem = function(title, value)
-				{
-					addItem(title, value);
-				}
+				$(this).bind("addItem", function(event, data)
+				{					
+					addItem(data.title, data.value);
+				});
 	        	
 		        function addItem (title, value, preadded)
-		        {
+		        {		        	
 	                var li = document.createElement("li");
 	                var txt = document.createTextNode(title);
 	                var aclose = document.createElement("a");       
