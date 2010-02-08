@@ -132,14 +132,38 @@ jQuery(
 					if (value.match(',') != null){
 						values = value.split(',')
 						for (var i=0; i < values.length; i++) {
-							if(values[i] != ""){
-								clean_value = values[i].replace(/^\s+|\s+$/g,"");//trim
+							clean_value = values[i].replace(/^\s*|\s*$/g,"");//trim
+							if (uniqueness(clean_value)) {
 								addEachItem(clean_value, clean_value, preadded);
-							}
+							};
 						};
 					} else {
-						addEachItem(title, value, preadded);
+						clean_unique_value = title.replace(/^\s*|\s*$/g,"");//trim
+						if (uniqueness(clean_unique_value)) {
+							addEachItem(clean_unique_value, value, preadded);
+						}
 					}
+					function uniqueness(user) {
+						if (user == '') {
+							$("#"+elemid + "_annoninput").children(".maininput").val('');
+							return false
+						};
+						actual_elements = $(".holder").find('li.bit-box')
+						dirty = ''
+						actual_elements.each(function(){
+							if ($(this).text() == user) {
+								dirty += 'x';
+							} else {
+								dirty += '';
+							};
+						});
+						if (dirty != ''){
+							$("#"+elemid + "_annoninput").children(".maininput").val('');
+							return false
+						} else {
+							return true
+						}
+					};
 					function addEachItem(ititle, ivalue, ipreadded){
 						var li = document.createElement("li");
 		                var txt = document.createTextNode(ititle);
