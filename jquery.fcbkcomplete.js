@@ -128,56 +128,69 @@ jQuery(
 				});
 	        	
 		        function addItem (title, value, preadded)
-		        {		        	
-	                var li = document.createElement("li");
-	                var txt = document.createTextNode(title);
-	                var aclose = document.createElement("a");       
-	                
-	                $(li).attr({"class": "bit-box","rel": value});
-	                $(li).prepend(txt);        
-	                $(aclose).attr({"class": "closebutton","href": "#"});
-	                
-	                li.appendChild(aclose);
-	                holder.append(li);
-	                
-	                $(aclose).click(
-	                    function(){
-	                        $(this).parent("li").fadeOut("fast", 
-	                            function(){
-									removeItem($(this));	                                
-	                            }
-	                        );
-	                        return false;
-	                    }
-	                );
-	                
-	                if (!preadded) 
-	                {						
-	                    $("#"+elemid + "_annoninput").remove();
-						var _item;
-	                    addInput(1);                        
-	                    if (element.children("option[value=" + value + "]").length)
-	                    {   
-							_item = element.children("option[value=" + value + "]");            
-	                        _item.get(0).setAttribute("selected", "selected");
-							if (!_item.hasClass("selected")) 
-							{
-								_item.addClass("selected");
+		        {	
+					if (value.match(',') != null){
+						values = value.split(',')
+						for (var i=0; i < values.length; i++) {
+							if(values[i] != ""){
+								clean_value = values[i].replace(/^\s+|\s+$/g,"");//trim
+								addEachItem(clean_value, clean_value, preadded);
 							}
-	                    }
-	                    else
-	                    {
-	                        var _item = $(document.createElement("option"));
-	                        _item.attr("value", value).get(0).setAttribute("selected", "selected");
-							_item.attr("value", value).addClass("selected");
-	                        _item.text(title);              
-	                        element.append(_item);
-	                    }
-						if (options.onselect.length)
-						{
-							funCall(options.onselect,_item)
-						}	
-	                }					     
+						};
+					} else {
+						addEachItem(title, value, preadded);
+					}
+					function addEachItem(ititle, ivalue, ipreadded){
+						var li = document.createElement("li");
+		                var txt = document.createTextNode(ititle);
+		                var aclose = document.createElement("a");       
+
+		                $(li).attr({"class": "bit-box","rel": ivalue});
+		                $(li).prepend(txt);        
+		                $(aclose).attr({"class": "closebutton","href": "#"});
+
+		                li.appendChild(aclose);
+		                holder.append(li);
+
+		                $(aclose).click(
+		                    function(){
+		                        $(this).parent("li").fadeOut("fast", 
+		                            function(){
+										removeItem($(this));	                                
+		                            }
+		                        );
+		                        return false;
+		                    }
+		                );
+
+		                if (!ipreadded) 
+		                {						
+		                    $("#"+elemid + "_annoninput").remove();
+							var _item;
+		                    addInput(1);                        
+		                    if (element.children("option[value=" + ivalue + "]").length)
+		                    {   
+								_item = element.children("option[value=" + ivalue + "]");            
+		                        _item.get(0).setAttribute("selected", "selected");
+								if (!_item.hasClass("selected")) 
+								{
+									_item.addClass("selected");
+								}
+		                    }
+		                    else
+		                    {
+		                        var _item = $(document.createElement("option"));
+		                        _item.attr("value", ivalue).get(0).setAttribute("selected", "selected");
+								_item.attr("value", ivalue).addClass("selected");
+		                        _item.text(ititle);              
+		                        element.append(_item);
+		                    }
+							// if (options.onselect.length)
+							// {
+								funCall(options.onselect,_item)
+							// }	
+		                }
+					}
 	                holder.children("li.bit-box.deleted").removeClass("deleted");
 	                feed.hide();
 					browser_msie?browser_msie_frame.hide():'';
@@ -185,11 +198,11 @@ jQuery(
 	        	
 				function removeItem(item)
 				{					
-					if (options.onremove.length)
-					{
+					// if (options.onremove.length)
+					// {
 					    var _item = element.children("option[value=" + item.attr("rel") + "]");
 						funCall(options.onremove,_item)
-					}
+					// }
 					element.children("option[value=" + item.attr("rel") + "]").removeAttr("selected");
 					element.children("option[value=" + item.attr("rel") + "]").removeClass("selected");
                     item.remove();					
@@ -302,14 +315,20 @@ jQuery(
 	                                }
 	                                else 
 	                                {
-	                                    $.getJSON(options.json_url + "?tag=" + etext, null, 
-	                                        function(data)
-	                                        {
-	                                            addMembers(etext, data);
-	                                            json_cache = true;
-	                                            bindEvents();
-	                                        }
-	                                    );
+										if (etext.length > options.lazy_get)
+										{
+		                                    $.getJSON(options.json_url + "?tag=" + etext, null, 
+		                                        function(data)
+		                                        {
+		                                            addMembers(etext, data);
+		                                            json_cache = true;
+		                                            bindEvents();
+		                                        }
+		                                    );
+										} else {
+											addMembers(etext);
+			                                bindEvents();
+										}
 	                                }
 	                            }
 	                            else 
@@ -568,38 +587,44 @@ jQuery(
 		        }
 	        	
 		        function addTextItem(value)
-		        {					
-	                if (options.newel) 
-	                {
-	                    feed.children("li[fckb=1]").remove();
-	                    if (value.length == 0)
-	                    {
-	                    	return;
-	                    }
-	                    var li = $(document.createElement("li"));
-	                    li.attr({"rel": value,"fckb": "1"}).html(value);
-	                    feed.prepend(li);
-				        counter++;
-	                } else 
+		        {	
+					if(options.show_own_text)
 					{
-						return;
+						if (options.newel) 
+		                {
+		                    feed.children("li[fckb=1]").remove();
+		                    if (value.length == 0)
+		                    {
+		                    	return;
+		                    }
+		                    var li = $(document.createElement("li"));
+		                    li.attr({"rel": value,"fckb": "1"}).html(value);
+		                    feed.prepend(li);
+					        counter++;
+		                } else 
+						{
+							return;
+						}
 					}
 	            }
 	        	
 				function funCall(func,item)
 				{	
-					var _object = "";			
-					for(i=0;i < item.get(0).attributes.length;i++)
-					{	
-						if (item.get(0).attributes[i].nodeValue != null) 
-						{
-							_object += "\"_" + item.get(0).attributes[i].nodeName + "\": \"" + item.get(0).attributes[i].nodeValue + "\",";
-						}
-					}
-					_object = "{"+ _object + " notinuse: 0}";
 					try {
-						eval(func + "(" + _object + ")");
+						func.call(item); 
 					}catch(ex){};
+					// var _object = "";			
+					// for(i=0;i < item.get(0).attributes.length;i++)
+					// {	
+					// 	if (item.get(0).attributes[i].nodeValue != null) 
+					// 	{
+					// 		_object += "\"_" + item.get(0).attributes[i].nodeName + "\": \"" + item.get(0).attributes[i].nodeValue + "\",";
+					// 	}
+					// }
+					// _object = "{"+ _object + " notinuse: 0}";
+					// try {
+					// 	eval(func + "(" + _object + ")");
+					// }catch(ex){};
 				}
 				
 				function checkFocusOn()
@@ -626,6 +651,8 @@ jQuery(
 				
 		        var options = $.extend({
 				        json_url: null,
+				        lazy_get: 2,
+				        show_own_text: false,
 				        cache: false,
 				        height: "10",
 				        newel: false,
@@ -634,8 +661,8 @@ jQuery(
 				        filter_hide: false,
 				        complete_text: "Start to type...",
 						maxshownitems:  30,
-						onselect: "",
-						onremove: ""
+						onselect: function(i){},
+						onremove: function(i){}
 			        }, opt);
 	        	
 		        //system variables
